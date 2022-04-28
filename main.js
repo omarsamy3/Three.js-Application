@@ -21,7 +21,7 @@ function init() {
         let Light = getSpotLight(1, 'rgb(255, 255, 255)');//Change between(Point - Spot - Directional)
         Light.position.set(-7.5, 10, 10);
         let sphereLight = getSphere(0.1, 32, getMaterial('basic', 'rgb(250, 250, 0)'));
-        let sphereMaterial = getMaterial('phong', 'rgb(100, 0, 150)');
+        let sphereMaterial = getMaterial('standard', 'rgb(100, 0, 150)');
         let sphere = getSphere(2, 32, sphereMaterial);
         let planeMaterial = getMaterial('standard', 'rgb(128, 128, 128)');
         let plane = getPlane(20, planeMaterial);
@@ -58,6 +58,46 @@ function init() {
             cameraPosition.add(camera.position, 'x', -10, 10);
             cameraPosition.add(camera.position, 'y', -10, 10);
             cameraPosition.add(camera.position, 'z', -10, 10);
+    //#endregion
+
+ //#region Create Objects
+            //###############################################//
+            //-----------------Cube Map-----------------//
+            //###############################################//
+            var path = './assets/cubemab/';
+            var format = '.jpg';
+            var urls = [
+                path + 'px' + format, path + 'nx' + format,
+                path + 'py' + format, path + 'ny' + format,
+                path + 'pz' + format, path + 'nz' + format
+            ];
+            var reflectionCube = new THREE.CubeTextureLoader().load( urls );
+            reflectionCube.format = THREE.RGBFormat;
+
+            scene.background = reflectionCube;
+
+            var loader = new THREE.TextureLoader();
+            planeMaterial.map = loader.load('./assets/textures/concrete.jpg');
+            planeMaterial.bumpMap = loader.load('./assets/textures/checkerboard.jpg');
+            planeMaterial.roughnessMap = loader.load('./assets/textures/scratch.jpg');
+            planeMaterial.bumpScale = 0.01;
+            planeMaterial.metalness = 0.1;
+            planeMaterial.roughness = 0.7;
+            planeMaterial.envMap = reflectionCube;
+            sphereMaterial.roughnessMap = loader.load('./assets/textures/fingerprints.jpg');
+            sphereMaterial.envMap = reflectionCube;
+
+            var maps = [
+            'map',
+            'bumpMap',
+            'roughnessMap'
+            ];
+            maps.forEach(function(mapName) {
+                var texture = planeMaterial[mapName];
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
+                texture.repeat.set(1, 1);
+            });
     //#endregion
 
     //#region Renderer
@@ -111,7 +151,7 @@ function getSphere(radius = 1, Segments = 32, material = getMaterial()) {
 }
 
 //Material functions
-function getMaterial(type = 'phong', color = 'rgb(128, 0, 0)') {
+function getMaterial(type = 'basic', color = 'rgb(128, 0, 0)') {
     
     let materialOptions = {
         color: color,
